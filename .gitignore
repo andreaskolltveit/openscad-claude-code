@@ -1,6 +1,9 @@
 .env
 .vs/
-   *.user
-   *.suo
-   bin/
-   obj/
+*.user
+*.suo
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
