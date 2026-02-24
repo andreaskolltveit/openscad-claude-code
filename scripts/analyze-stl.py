@@ -357,6 +357,34 @@ def analyze(filepath):
                   f"{pocket['y_range'][1]:.0f}]")
     if not found_pockets:
         print("  No internal voids detected (solid object)")
+    print()
+
+    # Reconstruction recommendation
+    flat_vertical_pct = (top + bottom + vertical) / len(triangles) * 100
+    curve_pct = angled / len(triangles) * 100
+
+    print("=" * 60)
+    print("Recommended reconstruction:")
+    if len(triangles) < 500 and flat_vertical_pct > 80:
+        print(f"  >>Manual parametric (simple geometry: {len(triangles)} faces, "
+              f"{flat_vertical_pct:.0f}% flat/vertical)")
+        print("    Write OpenSCAD by hand using dimensions above.")
+        print("    Best for: boxes, plates, simple brackets, geometric shapes")
+    elif len(triangles) > 1000 or curve_pct > 30:
+        print(f"  >>Polyhedron (complex: {len(triangles):,} faces, "
+              f"{curve_pct:.0f}% curved)")
+        print("    python scripts/stl-to-scad.py <file>")
+        print("    Perfect fidelity, ~1s render, valid manifold")
+        if len(triangles) > 50000:
+            ratio = max(0.1, 20000 / len(triangles))
+            print(f"    Consider: --reduce {ratio:.1f} to reduce "
+                  f"from {len(triangles):,} to ~{int(len(triangles)*ratio):,} faces")
+    else:
+        print(f"  >>Sliced cross-section (medium: {len(triangles):,} faces, "
+              f"{curve_pct:.0f}% curved)")
+        print("    python scripts/stl-to-scad.py <file> --mode sliced")
+        print("    Approximate but editable in OpenSCAD")
+    print("=" * 60)
 
 
 if __name__ == "__main__":

@@ -8,11 +8,42 @@
 5. Optional: `bash scripts/render-png.sh output/model.scad` for visual preview
 
 ### Reverse engineering workflow (STL → SCAD)
-1. User provides an existing `.stl` file
-2. Claude Code runs `python scripts/analyze-stl.py file.stl` to analyze geometry
-3. Claude Code interprets the report (dimensions, shape, layers, features, cross-sections, pockets)
-4. Claude Code writes a parametric `.scad` recreation in `output/`
-5. Compare dimensions: run `python scripts/analyze-stl.py` on the new STL to verify
+
+**Choose approach based on goal:**
+
+| Goal | Approach | Command |
+|------|----------|---------|
+| **Exact replica** (default) | `polyhedron` — perfect fidelity, ~1s render | `python scripts/stl-to-scad.py file.stl` |
+| **Editable replica** | `sliced` — cross-sections, approximate | `python scripts/stl-to-scad.py file.stl --mode sliced` |
+| **Parametric recreation** | Manual — guided by analyze-stl.py | `python scripts/analyze-stl.py file.stl` |
+
+**Primary workflow (polyhedron):**
+1. `python scripts/stl-to-scad.py file.stl` → `output/file.scad`
+2. `bash scripts/validate-scad.sh output/file.scad` → must say VALID
+3. `bash scripts/render-stl.sh output/file.scad` → `output/file.stl`
+4. Verify: `python scripts/analyze-stl.py output/file.stl` — dimensions must match original
+
+**Sliced workflow (editable cross-sections):**
+1. `python scripts/stl-to-scad.py file.stl --mode sliced`
+2. The output uses `polygon()` + `linear_extrude()` per Z-slice — editable in OpenSCAD
+
+**Manual parametric workflow (simple geometric shapes):**
+1. `python scripts/analyze-stl.py file.stl` — read the recommendation at the bottom
+2. Write parametric OpenSCAD code using dimensions from the report
+3. Best for models with <500 faces and mostly flat/vertical surfaces
+
+**Decision tree (also printed by analyze-stl.py):**
+- Complex/organic (>1000 faces, high curve %) → `polyhedron`
+- Medium complexity → `sliced`
+- Simple geometric (<500 faces, >80% flat/vertical) → manual parametric
+
+**Options:**
+- `--reduce 0.5` — simplify mesh to 50% of faces (needs `fast-simplification`)
+- `--z-step 0.5` — Z resolution for sliced mode (default 0.5mm)
+- `--tolerance 0.1` — polygon simplification for sliced mode
+- `-o path.scad` — custom output path
+
+**Dependencies:** `pip install -r requirements.txt` (first time only)
 
 #### CRITICAL GUARDRAILS — STL recreation
 - **NEVER** infer what a model is from its filename, user description, or any textual context
@@ -42,10 +73,18 @@ C:\Program Files (x86)\OpenSCAD\openscad.exe
 
 ## Scripts
 ```bash
+# Generation
 bash scripts/render-stl.sh output/model.scad       # → output/model.stl
 bash scripts/render-png.sh output/model.scad        # → output/model.png
 bash scripts/validate-scad.sh output/model.scad     # syntax check only
-python scripts/analyze-stl.py file.stl              # analyze existing STL
+
+# Reverse engineering (STL → SCAD)
+python scripts/stl-to-scad.py file.stl              # polyhedron (perfect replica)
+python scripts/stl-to-scad.py file.stl --mode sliced # cross-section (editable)
+python scripts/stl-to-scad.py file.stl --reduce 0.5  # simplify 50%
+
+# Analysis
+python scripts/analyze-stl.py file.stl              # analyze existing STL geometry
 ```
 
 ## Running Tests
