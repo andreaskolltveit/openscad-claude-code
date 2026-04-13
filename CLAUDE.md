@@ -67,9 +67,16 @@
 - Use MCAD when BOSL2 does not cover the need (e.g. stepper motors, servos)
 
 ## OpenSCAD Path
-```
-C:\Program Files (x86)\OpenSCAD\openscad.exe
-```
+Auto-detected by `scripts/_openscad-path.sh` across platforms:
+- macOS (snapshot, ARM-native): `/Applications/OpenSCAD.app/Contents/MacOS/OpenSCAD`
+- macOS (Homebrew symlink): `/opt/homebrew/bin/openscad`
+- Linux: `/usr/bin/openscad`
+- Windows: `C:\Program Files\OpenSCAD\openscad.exe`
+
+Override with `export OPENSCAD=/path/to/openscad` if needed.
+
+The 2026.x snapshot supports the **manifold** backend (much faster CGAL replacement).
+`render-stl.sh` enables it automatically when available.
 
 ## Scripts
 ```bash
@@ -85,6 +92,12 @@ python scripts/stl-to-scad.py file.stl --reduce 0.5  # simplify 50%
 
 # Analysis
 python scripts/analyze-stl.py file.stl              # analyze existing STL geometry
+
+# Image → lithophane (backlit photo relief)
+python scripts/image-to-lithophane.py photo.jpg                    # 100mm flat panel, 3mm thick
+python scripts/image-to-lithophane.py photo.jpg --width 80 --thickness 3 --base 0.6
+python scripts/image-to-lithophane.py photo.jpg --shape curved --diameter 80  # lampshade
+python scripts/image-to-lithophane.py photo.jpg --invert            # non-backlit relief/sign
 ```
 
 ## Running Tests

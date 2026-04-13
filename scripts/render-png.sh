@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-OPENSCAD="/c/Program Files (x86)/OpenSCAD/openscad.exe"
+# shellcheck source=_openscad-path.sh
+source "$(dirname "$0")/_openscad-path.sh"
 
 if [ $# -lt 1 ]; then
     echo "Usage: $0 <file.scad> [output.png]"
@@ -13,11 +14,6 @@ PNG_FILE="${2:-${SCAD_FILE%.scad}.png}"
 
 if [ ! -f "$SCAD_FILE" ]; then
     echo "Error: File not found: $SCAD_FILE"
-    exit 1
-fi
-
-if [ ! -f "$OPENSCAD" ]; then
-    echo "Error: OpenSCAD not found at: $OPENSCAD"
     exit 1
 fi
 

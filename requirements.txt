@@ -5,3 +5,4 @@ numpy>=1.24
 shapely>=2.0        # needed for sliced mode
 rtree>=1.0          # needed for sliced mode
 fast-simplification>=0.1  # needed for --reduce option
+pillow>=10.0        # needed for image-to-lithophane.py

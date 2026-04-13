@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-OPENSCAD="/c/Program Files (x86)/OpenSCAD/openscad.exe"
+# shellcheck source=_openscad-path.sh
+source "$(dirname "$0")/_openscad-path.sh"
 
 if [ $# -lt 1 ]; then
     echo "Usage: $0 <file.scad>"
@@ -15,13 +16,9 @@ if [ ! -f "$SCAD_FILE" ]; then
     exit 1
 fi
 
-if [ ! -f "$OPENSCAD" ]; then
-    echo "Error: OpenSCAD not found at: $OPENSCAD"
-    exit 1
-fi
-
 # Render to null output — OpenSCAD validates syntax during export
-TEMP_STL=$(mktemp --suffix=.stl)
+# (BSD mktemp on macOS does not support --suffix)
+TEMP_STL="$(mktemp -t scadval).stl"
 trap 'rm -f "$TEMP_STL"' EXIT
 
 echo "Validating: $SCAD_FILE"
@@ -31,9 +28,10 @@ OUTPUT=$("$OPENSCAD" -o "$TEMP_STL" "$SCAD_FILE" 2>&1) || {
     exit 1
 }
 
-if echo "$OUTPUT" | grep -qi "error\|warning"; then
+# Match real OpenSCAD diagnostics ("ERROR:" / "WARNING:") — not status fields like "NoError".
+if echo "$OUTPUT" | grep -E "^(ERROR|WARNING):" >/dev/null; then
     echo "WARNINGS/ERRORS:"
-    echo "$OUTPUT"
+    echo "$OUTPUT" | grep -E "^(ERROR|WARNING):"
     exit 1
 fi
 

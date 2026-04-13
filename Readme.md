@@ -10,10 +10,10 @@ Generate 3D-printable STL files from text descriptions using [Claude Code](https
 
 ## Requirements
 
-- Windows 10/11
-- [OpenSCAD](https://openscad.org/downloads.html) installed at `C:\Program Files (x86)\OpenSCAD\`
+- macOS, Linux, or Windows 10/11
+- [OpenSCAD](https://openscad.org/downloads.html) — install via `brew install --cask openscad@snapshot` (macOS, ARM-native + manifold backend), `apt install openscad` (Linux), or installer (Windows). Scripts auto-detect the binary; override with `export OPENSCAD=/path/to/openscad`.
 - [Claude Code](https://claude.com/claude-code) CLI
-- [Python 3.10+](https://python.org) (for STL analysis/conversion scripts)
+- [Python 3.10+](https://python.org) (for STL analysis/conversion + lithophane scripts)
 - [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) (optional, for tests)
 
 ## Quick Start

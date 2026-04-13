@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-OPENSCAD="/c/Program Files (x86)/OpenSCAD/openscad.exe"
+# shellcheck source=_openscad-path.sh
+source "$(dirname "$0")/_openscad-path.sh"
 
 if [ $# -lt 1 ]; then
     echo "Usage: $0 <file.scad> [output.stl]"
@@ -16,13 +17,13 @@ if [ ! -f "$SCAD_FILE" ]; then
     exit 1
 fi
 
-if [ ! -f "$OPENSCAD" ]; then
-    echo "Error: OpenSCAD not found at: $OPENSCAD"
-    exit 1
-fi
-
 echo "Rendering: $SCAD_FILE → $STL_FILE"
-"$OPENSCAD" -o "$STL_FILE" "$SCAD_FILE" 2>&1
+# Use manifold backend if supported (OpenSCAD 2023.05+ snapshot) — significantly faster than CGAL.
+BACKEND_FLAG=()
+if "$OPENSCAD" --help 2>&1 | grep -q -- "--backend"; then
+    BACKEND_FLAG=(--backend=manifold)
+fi
+"$OPENSCAD" "${BACKEND_FLAG[@]}" -o "$STL_FILE" "$SCAD_FILE" 2>&1
 
 if [ -f "$STL_FILE" ] && [ -s "$STL_FILE" ]; then
     echo "Success: $STL_FILE ($(wc -c < "$STL_FILE") bytes)"
